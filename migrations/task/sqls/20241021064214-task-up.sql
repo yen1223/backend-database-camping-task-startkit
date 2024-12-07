@@ -290,13 +290,14 @@ group by user_id;
 
      select "COURSE_BOOKING".user_id,
      	((select sum(purchased_credits) from "CREDIT_PURCHASE" 
-		where user_id=(select id from "USER" where email='wXlTq@hexschooltest.io') 
-		group by user_id) -
+	where user_id=(select id from "USER" where email='wXlTq@hexschooltest.io') 
+	group by user_id) -
 		(select count(course_id) from "COURSE_BOOKING" 
 		where status in ('上課中','即將授課') 
 		and user_id=(select id from "USER" where email='wXlTq@hexschooltest.io') 
-		group by user_id)) as remaining_credit
-	 from "COURSE_BOOKING"
+		group by user_id)) 
+     as remaining_credit
+     from "COURSE_BOOKING"
      join "CREDIT_PURCHASE" on "COURSE_BOOKING".user_id ="CREDIT_PURCHASE".user_id
      where "COURSE_BOOKING".user_id=(select id from "USER" where email='wXlTq@hexschooltest.io')
      and "COURSE_BOOKING".status in ('上課中','即將授課')
