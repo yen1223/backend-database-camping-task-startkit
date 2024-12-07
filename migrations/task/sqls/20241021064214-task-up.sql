@@ -87,7 +87,8 @@ values (
 (select credit_amount from "CREDIT_PACKAGE" where name='14 堂組合包方案'),
 (select price from "CREDIT_PACKAGE" where name='14 堂組合包方案')
 )
---); 原本沒考慮到要用子查詢加入credit_amount跟price，參考了直播課內容才加入
+    ); 
+原本沒考慮到要用子查詢加入credit_amount跟price，參考了直播課內容才加入
 
 
 -- ████████  █████   █    ████   
