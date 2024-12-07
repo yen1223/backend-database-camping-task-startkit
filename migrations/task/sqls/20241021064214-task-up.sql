@@ -212,24 +212,75 @@ values
         -- 2. 預約時間`booking_at` 設為2024-11-24 16:00:00
         -- 3. 狀態`status` 設定為即將授課
 
+--複製方便參考1. 用戶名稱為`李燕容`，Email 為`lee2000@hexschooltest.io`，Role為`USER`
+--     2. 用戶名稱為`王小明`，Email 為`wXlTq@hexschooltest.io`，Role為`USER`
+
+insert into "COURSE_BOOKING" (user_id,course_id,booking_at,status)
+values
+(
+(select id from "USER" where email='wXlTq@hexschooltest.io'),
+(select "COURSE".id from "COURSE" join "USER" ON "USER".id="COURSE".user_id where "USER".email='lee2000@hexschooltest.io'),
+('2024-11-24 16:00:00'),
+('即將授課')
+),
+(
+(select id from "USER" where email='richman@hexschooltest.io'),
+(select "COURSE".id from "COURSE" join "USER" ON "USER".id="COURSE".user_id where "USER".email='lee2000@hexschooltest.io'),
+('2024-11-24 16:00:00'),
+('即將授課')
+);
+
+
 -- 5-2. 修改：`王小明`取消預約 `李燕容` 的課程，請在`COURSE_BOOKING`更新該筆預約資料：
     -- 1. 取消預約時間`cancelled_at` 設為2024-11-24 17:00:00
     -- 2. 狀態`status` 設定為課程已取消
+
+update "COURSE_BOOKING" 
+set cancelled_at ='2024-11-24 17:00:00', status ='課程已取消'
+where user_id =(select(id) from "USER" where email='wXlTq@hexschooltest.io');
+
 
 -- 5-3. 新增：`王小明`再次預約 `李燕容`   的課程，請在`COURSE_BOOKING`新增一筆資料：
     -- 1. 預約人設為`王小明`
     -- 2. 預約時間`booking_at` 設為2024-11-24 17:10:25
     -- 3. 狀態`status` 設定為即將授課
 
+insert into "COURSE_BOOKING" (user_id,course_id,booking_at,status)
+values
+(
+(select id from "USER" where email='wXlTq@hexschooltest.io'),
+(select "COURSE".id from "COURSE" join "USER" ON "USER".id="COURSE".user_id where "USER".email='lee2000@hexschooltest.io'),
+('2024-11-24 17:10:25'),
+('即將授課')
+);
+
 -- 5-4. 查詢：取得王小明所有的預約紀錄，包含取消預約的紀錄
+select * from "COURSE_BOOKING"
+where user_id=(select id from "USER" where email='wXlTq@hexschooltest.io');
 
 -- 5-5. 修改：`王小明` 現在已經加入直播室了，請在`COURSE_BOOKING`更新該筆預約資料（請注意，不要更新到已經取消的紀錄）：
     -- 1. 請在該筆預約記錄他的加入直播室時間 `join_at` 設為2024-11-25 14:01:59
     -- 2. 狀態`status` 設定為上課中
 
+update "COURSE_BOOKING" 
+set join_at ='2024-11-25 14:01:59' , status='上課中'
+where user_id=(select id from "USER" where email='wXlTq@hexschooltest.io') and status='即將授課';
+
 -- 5-6. 查詢：計算用戶王小明的購買堂數，顯示須包含以下欄位： user_id , total。 (需使用到 SUM 函式與 Group By)
+select user_id,SUM(purchased_credits) AS total
+from "CREDIT_PURCHASE" 
+WHERE user_id=(select id from "USER" where email='wXlTq@hexschooltest.io')
+group by user_id;
 
 -- 5-7. 查詢：計算用戶王小明的已使用堂數，顯示須包含以下欄位： user_id , total。 (需使用到 Count 函式與 Group By)
+
+select user_id,COUNT(course_id) as total
+from "COURSE_BOOKING" 
+where user_id=(select id from "USER" where email='wXlTq@hexschooltest.io')
+and status='上課中'
+group by user_id;
+
+--似乎aggregate function必須搭配group by 使用，原本以為這題是算王小明剩餘時數
 
 -- 5-8. [挑戰題] 查詢：請在一次查詢中，計算用戶王小明的剩餘可用堂數，顯示須包含以下欄位： user_id , remaining_credit
     -- 提示：
@@ -249,14 +300,45 @@ values
 -- 6-1 查詢：查詢專長為重訓的教練，並按經驗年數排序，由資深到資淺（需使用 inner join 與 order by 語法)
 -- 顯示須包含以下欄位： 教練名稱 , 經驗年數, 專長名稱
 
+	select "USER".name AS coach_name,"COACH".experience_years,"SKILL".name AS skill_name
+	from "SKILL"
+	join "COACH_LINK_SKILL" on "SKILL".id="COACH_LINK_SKILL".skill_id 
+	join "COACH" on "COACH_LINK_SKILL".coach_id ="COACH".id 
+	join "USER" on "COACH".user_id ="USER".id 
+	where "SKILL".name='重訓'
+	order by "COACH".experience_years desc;
+
+	
 -- 6-2 查詢：查詢每種專長的教練數量，並只列出教練數量最多的專長（需使用 group by, inner join 與 order by 與 limit 語法）
 -- 顯示須包含以下欄位： 專長名稱, coach_total
 
--- 6-3. 查詢：計算 11 月份組合包方案的銷售數量
+select "SKILL".name as skill_name, COUNT("COACH".id) as coach_total
+from "SKILL"
+join "COACH_LINK_SKILL" on "SKILL".id="COACH_LINK_SKILL".skill_id 
+join "COACH" on "COACH_LINK_SKILL".coach_id ="COACH".id
+group by "SKILL".name
+order by COUNT("COACH".id) desc 
+limit 1;
+
+-- 6-3. 查詢：計算 12 月份組合包方案的銷售數量
 -- 顯示須包含以下欄位： 組合包方案名稱, 銷售數量
 
--- 6-4. 查詢：計算 11 月份總營收（使用 purchase_at 欄位統計）
+select "CREDIT_PACKAGE".name as 組合包方案名稱, COUNT("CREDIT_PURCHASE".credit_package_id) as 銷售數量
+from "CREDIT_PACKAGE" join "CREDIT_PURCHASE" on "CREDIT_PACKAGE".id="CREDIT_PURCHASE".credit_package_id 
+where "CREDIT_PURCHASE".purchase_at between '2024-12-01 00:00:00' and '2024-12-31 23:59:59'
+group by "CREDIT_PACKAGE".name;
+
+-- 6-4. 查詢：計算 12 月份總營收（使用 purchase_at 欄位統計）
 -- 顯示須包含以下欄位： 總營收
 
--- 6-5. 查詢：計算 11 月份有預約課程的會員人數（需使用 Distinct，並用 created_at 和 status 欄位統計）
+select SUM(price_paid) as 總營收
+from "CREDIT_PURCHASE"
+where "CREDIT_PURCHASE".purchase_at between '2024-12-01 00:00:00' and '2024-12-31 23:59:59';
+
+-- 6-5. 查詢：計算 12 月份有預約課程的會員人數（需使用 Distinct，並用 created_at 和 status 欄位統計）
 -- 顯示須包含以下欄位： 預約會員人數
+
+select distinct COUNT(user_id) as 預約會員人數
+from "COURSE_BOOKING"
+where created_at between '2024-12-01 00:00:00' and '2024-12-31 23:59:59'
+and status in('上課中','即將授課');
