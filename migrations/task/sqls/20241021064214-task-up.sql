@@ -14,8 +14,9 @@
 --     4. 用戶名稱為`好野人`，Email 為`richman@hexschooltest.io`，Role為`USER`
 --     5. 用戶名稱為`Q太郎`，Email 為`starplatinum@hexschooltest.io`，Role為`USER`
 --     6. 用戶名稱為 透明人，Email 為 opacity0@hexschooltest.io，Role 為 USER
+
 insert into "USER" (name,email,role)
-VALUES
+values
 ('李燕容','lee2000@hexschooltest.io','USER'),
 ('王小明','wXlTq@hexschooltest.io','USER'),
 ('肌肉棒子','muscle@hexschooltest.io','USER'),
@@ -112,7 +113,6 @@ values
     -- 1. 所有教練都有 `重訓` 專長
     -- 2. 教練`肌肉棒子` 需要有 `瑜伽` 專長
     -- 3. 教練`Q太郎` 需要有 `有氧運動` 與 `復健訓練` 專長
-
 
 insert into "COACH_LINK_SKILL" (coach_id,skill_id)
 VALUES
@@ -230,7 +230,6 @@ values
 ('即將授課')
 );
 
-
 -- 5-2. 修改：`王小明`取消預約 `李燕容` 的課程，請在`COURSE_BOOKING`更新該筆預約資料：
     -- 1. 取消預約時間`cancelled_at` 設為2024-11-24 17:00:00
     -- 2. 狀態`status` 設定為課程已取消
@@ -238,7 +237,6 @@ values
 update "COURSE_BOOKING" 
 set cancelled_at ='2024-11-24 17:00:00', status ='課程已取消'
 where user_id =(select(id) from "USER" where email='wXlTq@hexschooltest.io');
-
 
 -- 5-3. 新增：`王小明`再次預約 `李燕容`   的課程，請在`COURSE_BOOKING`新增一筆資料：
     -- 1. 預約人設為`王小明`
@@ -255,6 +253,7 @@ values
 );
 
 -- 5-4. 查詢：取得王小明所有的預約紀錄，包含取消預約的紀錄
+
 select * from "COURSE_BOOKING"
 where user_id=(select id from "USER" where email='wXlTq@hexschooltest.io');
 
@@ -300,15 +299,14 @@ group by user_id;
 -- 6-1 查詢：查詢專長為重訓的教練，並按經驗年數排序，由資深到資淺（需使用 inner join 與 order by 語法)
 -- 顯示須包含以下欄位： 教練名稱 , 經驗年數, 專長名稱
 
-	select "USER".name AS coach_name,"COACH".experience_years,"SKILL".name AS skill_name
-	from "SKILL"
-	join "COACH_LINK_SKILL" on "SKILL".id="COACH_LINK_SKILL".skill_id 
-	join "COACH" on "COACH_LINK_SKILL".coach_id ="COACH".id 
-	join "USER" on "COACH".user_id ="USER".id 
-	where "SKILL".name='重訓'
-	order by "COACH".experience_years desc;
+select "USER".name AS coach_name,"COACH".experience_years,"SKILL".name AS skill_name
+from "SKILL"
+join "COACH_LINK_SKILL" on "SKILL".id="COACH_LINK_SKILL".skill_id 
+join "COACH" on "COACH_LINK_SKILL".coach_id ="COACH".id 
+join "USER" on "COACH".user_id ="USER".id 
+where "SKILL".name='重訓'
+order by "COACH".experience_years desc;
 
-	
 -- 6-2 查詢：查詢每種專長的教練數量，並只列出教練數量最多的專長（需使用 group by, inner join 與 order by 與 limit 語法）
 -- 顯示須包含以下欄位： 專長名稱, coach_total
 
